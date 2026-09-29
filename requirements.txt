@@ -1,0 +1,9 @@
+# Starter dependencies for modeling/analysis (scripts/download_data.py is stdlib-only).
+# Pin versions once the modeling approach is settled.
+numpy
+pandas
+matplotlib
+scikit-learn
+jupyter
+ipykernel
+pytest
