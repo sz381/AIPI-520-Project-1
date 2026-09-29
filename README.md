@@ -27,7 +27,7 @@ hourly observations, 2015-01-01 through 2026-09-16.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate.ps1
 pip install -r requirements.txt
 ```
 
@@ -51,6 +51,6 @@ of the raw data (through 2026-09-15).
 
 ## Conventions
 
-- Never edit files in `data/raw/`; write cleaned outputs to `data/interim/` or `data/processed/`.
+- Never edit files in `data/raw/`; write cleaned outputs to `data/processed/`.
 - Name notebooks `NN_short_description.ipynb` and keep them in run order.
 - Move logic reused across notebooks into `src/weather_modeling/`.
