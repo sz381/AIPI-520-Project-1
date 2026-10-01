@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/*
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+
+# Large artifacts
+# Raw/processed data is currently committed. If the repo grows, stop tracking it
+# (git rm -r --cached data/raw data/processed), uncomment these lines, and
+# regenerate raw data with scripts/download_data.py.
+# data/raw/*
+# data/processed/*
+# !data/**/.gitkeep
+models/*
+!models/.gitkeep
