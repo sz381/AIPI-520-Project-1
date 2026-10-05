@@ -49,10 +49,14 @@ and ECMWF (open data).
   at 19:34 UTC and the GFS run at 17:09 UTC, 8.4 and 10.8 hours before the
   cutoff (Sep 17 04:00 UTC).
 - **Two ECMWF 12z runs are dated later than assumed**: 2024-09-17 (37 hours
-  after initialisation) and 2025-02-24 (24 hours). An upload time can only
-  overstate the delay, so this does not prove they were late, but nothing shows
-  they were on time. They are still in the training data here; dropping them
-  would be the strict reading of the rule and changes two of 915 runs.
+  after initialisation) and 2025-02-24 (24 hours). This is not a breach of the
+  assignment's rule: both were published well over a year before the real
+  cutoff, so using them to train the final forecast is allowed. What it touches
+  is the backtest, which treats each past run as if it were available 16 hours
+  after initialisation. An upload time can only overstate the delay, so it does
+  not even prove these two were late. They are 2 of 915 training runs and fall
+  in neither validation fold; dropping them would make the backtest stricter and
+  would not change the results in any visible way.
 - **A gap in the evidence**: from 2024-07-16 to 2024-11-11 ECMWF's public files
   stop at 240 hours, so for those 119 runs the upload time is that of the
   240-hour file and says nothing about forecast days 11 to 15.
