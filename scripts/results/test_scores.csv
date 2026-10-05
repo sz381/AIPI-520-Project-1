@@ -1,0 +1,24 @@
+,MAE,RMSE,bias
+H1 persistence,4.061,4.961,-1.356
+H2 historical average,3.64,4.419,-0.217
+"R1 climatology (calendar LR, 03)",3.572,4.279,0.331
+R2 station-only LR (04 LR3),3.399,4.1,0.048
+N0 raw ECMWF,3.27,4.069,-0.03
+N1 raw lagged-ensemble mean,2.832,3.679,-1.0
+M1 LR/day: nwp_anomaly only,2.804,3.785,-1.294
+M3 LR/day: core (+ hour terms),2.752,3.784,-1.365
+M4 LR/day: core + other NWP vars,2.738,3.822,-1.423
+M6 LR/day: core with lagged-ensemble NWP,2.776,3.877,-1.706
+M8 LR/day: lagged + bias 30d + nwp_anomaly,2.677,3.56,-0.952
+M9 LR/day: lagged + biases 14/30/60d,2.681,3.59,-1.043
+"M10 M9, recency-weighted (half-life 90 d)",2.692,3.639,-1.209
+"M11 M9, recency-weighted (half-life 180 d)",2.679,3.608,-1.134
+"M12 M9, last 365 days only",2.666,3.626,-1.202
+M5 single LR x lead (core),2.697,3.726,-1.345
+"M13 split: days 1-7 M11 features, days 8-14 M6 features (hl 180 d)",2.744,3.746,-1.353
+M14 M11 with historical-average base,2.694,3.666,-1.312
+M15 M6 with historical-average base (hl 180 d),2.786,3.85,-1.651
+E1 average of M6 and M11,2.716,3.731,-1.42
+E2 average of M13 and M15,2.755,3.791,-1.502
+T1 random forest residual,3.0,4.039,-1.131
+T2 hist gradient boosting residual,2.964,3.939,-1.137

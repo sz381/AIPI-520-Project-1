@@ -6,4 +6,5 @@ matplotlib
 scikit-learn
 jupyter
 ipykernel
+tqdm
 pytest
