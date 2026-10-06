@@ -2,7 +2,6 @@
 # Pin versions once the modeling approach is settled.
 numpy
 pandas
-pyarrow
 matplotlib
 scikit-learn
 jupyter
