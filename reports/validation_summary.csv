@@ -1,0 +1,9 @@
+method,fold1_mae,fold2_mae,windows_mae,fold1_pct_vs_hist_avg,fold2_pct_vs_hist_avg,windows_pct_vs_hist_avg
+persistence,3.871,2.869,3.702,-33.608,-15.163,-51.409
+historical_average,2.898,2.491,2.445,0.0,0.0,0.0
+lr_raw_noaa,2.984,2.497,,-2.977,-0.208,
+lr_noaa_anomalies,3.063,2.279,2.406,-5.72,8.533,1.585
+ecmwf_raw,2.437,2.017,1.822,15.887,19.038,25.482
+ecmwf_lagged_mean,2.288,1.881,1.874,21.052,24.513,23.363
+lr_temperature_target,2.265,1.904,,21.817,23.594,
+lr_final,2.204,1.777,1.848,23.924,28.678,24.413
