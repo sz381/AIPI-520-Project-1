@@ -24,6 +24,7 @@ MODELS = {"N0 raw ECMWF": "ecmwf_12z", "G0 raw GFS": "gfs_12z"}
 def samples_with_gfs():
     """The sample table plus the GFS 12z forecast of the same run day, paired like ECMWF (obs hh:51 <-> hh+1:00)."""
     samples = pd.read_csv(SAMPLES_FILE, parse_dates=["run_day", "target_utc"])
+    samples = samples.drop(columns="gfs_12z", errors="ignore")  # notebook 03 now writes the same column itself
     gfs = pd.read_csv(GFS_FILE, usecols=["run_utc", "valid_utc", "temperature_2m"])
     gfs["run_day"] = pd.to_datetime(gfs["run_utc"], utc=True).dt.tz_localize(None).dt.normalize()
     gfs["target_utc"] = pd.to_datetime(gfs["valid_utc"], utc=True) - pd.Timedelta(hours=lib.NWP_VALID_OFFSET_H)
