@@ -14,6 +14,7 @@ first scored shows up in the log. Missing observations are not filled in: the
 number of hours actually scored and their quality classes are reported.
 
 Output: reports/final_scores.csv
+        reports/final_hourly.csv        observed temperature and every forecast, one row per target hour
         reports/final_scoring_log.csv   one line per forecast file per run of this script
         reports/figures/final_mae_by_lead_day.png
 """
@@ -84,9 +85,13 @@ def main():
 
     out = config.PROJECT_ROOT / "reports" / "final_scores.csv"
     pd.concat(tables, names=["metric"]).round(3).to_csv(out)
+    hourly = config.PROJECT_ROOT / "reports" / "final_hourly.csv"
+    columns = ["target_time_local", "lead_day", TARGET, "target_quality", *names]
+    frame[columns].round({name: 3 for name in [TARGET, *names]}).to_csv(hourly, index=False, date_format="%Y-%m-%d %H:%M")
     figure = config.FIGURES_DIR / "final_mae_by_lead_day.png"
     plot_by_lead_day(tables["mae"], "MAE by lead day, Sep 17 to Sep 30, 2026", path=figure)
-    print(f"\nsaved {out.relative_to(config.PROJECT_ROOT)} and {figure.relative_to(config.PROJECT_ROOT)}")
+    print(f"\nsaved {out.relative_to(config.PROJECT_ROOT)}, {hourly.relative_to(config.PROJECT_ROOT)} "
+          f"and {figure.relative_to(config.PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

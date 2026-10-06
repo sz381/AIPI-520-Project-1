@@ -284,3 +284,44 @@ def ecmwf_weight(models, rows, lead_days=None):
             bumped[:, GAM_FEATURES.index(name)] += 1.0
         weights[lead_day] = float(np.mean(model.predict(bumped) - model.predict(base)))
     return pd.Series(weights, name="weight_on_ecmwf")
+
+
+def lr_ecmwf_weight(models):
+    """The LR's version of ``ecmwf_weight``: its two ECMWF coefficients added up, by lead day."""
+    first, second = LR_FEATURES.index("nwp_anomaly"), LR_FEATURES.index("nwp_lagged_anomaly")
+    return pd.Series({day: float(m.coef_[first] + m.coef_[second]) for day, m in models.items()},
+                     name="weight_on_ecmwf")
+
+
+def smoothing_summary(models):
+    """Per lead day: the lambda GCV chose, the effective degrees of freedom, and the GCV score."""
+    return pd.DataFrame({
+        day: {"lambda": float(np.ravel(m.lam)[0]), "edof": float(m.statistics_["edof"]),
+              "gcv": float(m.statistics_["GCV"])}
+        for day, m in models.items()
+    }).T.rename_axis("lead_day")
+
+
+# --------------------------------------------------------------------------- saved models
+
+MODELS_PATH = config.PROJECT_ROOT / "models" / "linear_gam.pkl"
+
+
+def save_models(gam_models, lr_models, path=MODELS_PATH):
+    """Pickle the final models (written by scripts/evaluate_linear_gam.py; models/ is not tracked)."""
+    import pickle
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"linear_gam": gam_models, "lr_mos": lr_models,
+               "gam_features": GAM_FEATURES, "lr_features": LR_FEATURES}
+    path.write_bytes(pickle.dumps(payload))
+    return path
+
+
+def load_models(path=MODELS_PATH):
+    """The final models saved by ``save_models``. Needs pygam installed to unpickle the GAMs."""
+    import pickle
+
+    if not path.exists():
+        raise FileNotFoundError(f"{path} not found; run scripts/evaluate_linear_gam.py first")
+    return pickle.loads(path.read_bytes())

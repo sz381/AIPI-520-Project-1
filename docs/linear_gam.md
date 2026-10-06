@@ -64,7 +64,17 @@ python scripts/evaluate_linear_gam.py
 pytest tests/test_gam.py
 # once, after the forecasts are frozen:
 python scripts/score_submission.py reports/predictions/linear_gam.csv reports/predictions/lr_mos.csv
+# then, for plots and comparisons:
+jupyter notebook notebooks/06_linear_gam.ipynb
 ```
+
+The scripts do all the work: `evaluate_linear_gam.py` fits, validates, saves
+the final models (`models/linear_gam.pkl`, not tracked) and freezes the
+forecasts; `score_submission.py` scores them and also writes
+`reports/final_hourly.csv`. The notebook fits and scores nothing. It reads
+those outputs to plot validation by lead day and by hour, the 2026 windows,
+the GAM's partial dependence and ECMWF weight against the LR's, the final
+forecast and the test results.
 
 The evaluation fits 14 GAMs per fold, for 2 folds, 6 windows and the final
 model, with a 7-value lambda search each; expect a few minutes.

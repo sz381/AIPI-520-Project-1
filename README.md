@@ -17,13 +17,13 @@ forecast runs.
 │   ├── processed/              # Final, model-ready datasets
 ├── notebooks/                  # Exploratory work, numbered in run order
 │   ├── 01_data_sourcing.ipynb
-│   └── 06_linear_gam.ipynb     # Linear GAM: validation, final forecast, test scoring
+│   └── 06_linear_gam.ipynb     # Plots and comparisons of the linear GAM's results
 ├── scripts/                    # Runnable, reproducible entry points
 │   ├── download_data.py        # Downloads raw GHCNh data for RDU
 │   ├── download_nwp.py         # Downloads the forecast runs from Open-Meteo
 │   ├── build_dataset.py        # Builds data/processed/ from the raw downloads
 │   ├── evaluate_baselines.py   # Scores the baselines on the validation folds
-│   ├── evaluate_linear_gam.py  # Validates the linear GAM and writes its forecast
+│   ├── evaluate_linear_gam.py  # Fits and validates the linear GAM, writes its forecast
 │   ├── check_run_availability.py  # Publication time of every forecast run used
 │   ├── check_station_break.py  # Evidence for the July 2025 break in RDU's readings
 │   ├── break_sensitivity.py    # Scores under each treatment of that break
