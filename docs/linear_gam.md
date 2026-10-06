@@ -1,7 +1,7 @@
 # Linear GAM
 
 A generalised additive model with an identity link (`pygam.LinearGAM`), built
-the same way as the linear regression in `notebooks/04_linear_regression_modeling_new.ipynb`
+the same way as the linear regression in `notebooks/04_linear_regression_modeling_new_new.ipynb`
 and trained on the same table from `03`
 (`data/processed/model_samples_2024-03-14_to_2026-09-16.csv.gz`).
 

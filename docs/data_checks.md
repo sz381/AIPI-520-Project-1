@@ -1,36 +1,30 @@
-# Data checks added to the LR pipeline
+# Data checks
 
-Three additions on top of the `shenwei` branch. Nothing that was already there
-is changed; each script reads the files the branch already has.
+Two checks on the inputs that the notebooks do not make themselves, and a
+cross-check of the baselines against a second implementation.
 
 | Script | Answers | Output in `scripts/results/` |
 |---|---|---|
-| `scripts/gfs_baseline.py` | How good is raw GFS next to raw ECMWF? | `gfs_baseline_scores.csv`, `gfs_baseline_mae_by_lead_day.csv` |
 | `scripts/check_run_availability.py` | Was every forecast run published before it was used? | `run_availability.csv` |
 | `scripts/check_station_break.py` | Why does the ECMWF bias change in mid-2025? | `station_break_monthly.csv`, `station_break.png` |
 
-Run them from `scripts/`, like the other scripts. None needs a notebook to be
-re-run first.
+Both read the files written by notebooks 01 and 02 and can be run on their own.
+The availability check makes about 2,000 small requests and takes a few
+minutes.
 
-## 1. Raw GFS baseline
-
-GFS 12z runs were fetched with the branch's own `fetch_nwp_runs.py`
-(`--model gfs_seamless --start 2026-04-02`) and saved as
-`data/raw/gfs_seamless_runs_2026-04-02_to_2026-09-16.csv`, in the same format
-and units as the ECMWF file. The archive starts on 2026-04-02 and lacks the
-2026-09-14 run, so there are 167 runs and no GFS for `fold1_2025`.
-
-Scores in degC on the hours where the observation and both forecasts exist:
+The comparison of raw GFS with raw ECMWF, which used to be a third script here,
+is now part of the notebooks: 03 adds the GFS forecast to the sample table, 04
+compares the two on fold 2 and 05 on the test window.
 
 | Period | Hours | Raw ECMWF MAE | Raw GFS MAE | Raw ECMWF RMSE | Raw GFS RMSE |
 |---|---|---|---|---|---|
-| `fold2_2026` | 12,932 | 2.02 | 2.61 | 2.80 | 3.51 |
-| Test, Sep 17-30 | 322 | 3.27 | 4.03 | 4.07 | 5.19 |
+| Fold 2 (2026), from notebook 04 | 12,918 | 2.02 | 2.60 | 2.80 | 3.51 |
+| Test, Sep 17-30, from notebook 05 | 322 | 3.27 | 4.03 | 4.07 | 5.19 |
 
-On the validation fold GFS is slightly better than ECMWF on lead day 1 (1.19
-against 1.25) and worse on every later day.
+The GFS archive starts on 2026-04-02 and lacks the 2026-09-14 run, so there are
+167 runs and no GFS for fold 1.
 
-## 2. When the runs were published
+## 1. When the runs were published
 
 A run's initialisation time is not its publication time, and the Single Runs
 archive is keyed by the former. The pipeline assumes a run is out by the
@@ -61,7 +55,7 @@ and ECMWF (open data).
   stop at 240 hours, so for those 119 runs the upload time is that of the
   240-hour file and says nothing about forecast days 11 to 15.
 
-## 3. The July 2025 break in the station record
+## 2. The July 2025 break in the station record
 
 Against both ECMWF forecasts and the ERA5 reanalysis, the station's reported
 temperature drops around 2025-07-22, after sitting higher since early 2024.
@@ -80,27 +74,26 @@ only for this diagnosis, never as a feature or a target.
 
 What it means for the models: a regression trained mostly on 2024 to mid-2025
 learns that ECMWF is about 1 degC too cold, which no longer holds. That is
-visible in `reports/figures/02_ecmwf_bias_by_month.png`, and it is why the
-recency-weighted and last-365-days variants help, especially on `fold1_2025`,
-whose training targets almost all predate the break.
+visible in `reports/figures/02_ecmwf_bias_by_month.png`, and it is why weighting
+recent runs more helps, especially on fold 1, whose training targets almost all
+predate the break.
 
 The size of the step as it could have been estimated at the time, from ECMWF
-alone: 1.49 degC at the start of `fold1_2025` (from 25 days of data), 0.96 degC
-at the start of `fold2_2026` and at the real cutoff (from a full year).
+alone: 1.49 degC at the start of fold 1 (from 25 days of data), 0.96 degC at the
+start of fold 2 and at the real cutoff (from a full year).
 
 ## Cross-check with an independent implementation
 
 The branch `data-eval-framework` builds the same pipeline separately, as a
-package with tests (`src/weather_modeling`). The two were written independently
-and agree on the baselines both compute. MAE in degC, `fold1_2025` /
-`fold2_2026`:
+package with tests. The two were written independently and agree on the
+baselines both compute, to within 0.06 degC. MAE in degC, fold 1 / fold 2:
 
-| Baseline | This branch | `data-eval-framework` |
+| Baseline | This repository (`reports/validation_summary.csv`) | `data-eval-framework` |
 |---|---|---|
-| Raw ECMWF | 2.45 / 2.04 | 2.44 / 2.02 |
-| Persistence | 3.83 / 2.88 | 3.87 / 2.86 |
-| Historical average / climatology | 2.93 / 2.50 | 2.96 / 2.47 |
-| Raw GFS (`fold2_2026` only) | 2.61 | 2.60 |
+| Raw ECMWF | 2.44 / 2.02 | 2.44 / 2.02 |
+| Persistence | 3.87 / 2.87 | 3.87 / 2.86 |
+| Historical average / climatology | 2.90 / 2.49 | 2.96 / 2.47 |
+| Raw GFS (fold 2 only) | 2.60 | 2.60 |
 
 That branch also has two further checks of the station break that are not
 reproduced here: against three stations about 100 km away the drop is 1.0, 0.8

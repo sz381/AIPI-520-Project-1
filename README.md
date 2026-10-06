@@ -1,28 +1,39 @@
 # AIPI 520 – Project 1: Modeling Weather
 
-Modeling weather at Raleigh-Durham International Airport (RDU) using NOAA GHCNh
-hourly observations, 2015-01-01 through 2026-09-16.
+Forecast of the hourly temperature at Raleigh-Durham International Airport (RDU)
+for September 17-30, 2026, made only from data available before September 17,
+12am Eastern: NOAA GHCNh observations since 2015 and archived ECMWF forecast
+runs. The final model is a linear regression; a linear GAM is the second model.
 
 ## Project structure
 
 ```
 .
 ├── data/
-│   ├── raw/ghcnh_rdu/<year>/   # Immutable downloads, one CSV per (Eastern) year
-│   ├── processed/              # Final, model-ready datasets
-├── notebooks/                  # Exploratory work, numbered in run order
-│   ├── 01_data_sourcing.ipynb
-│   └── 06_linear_gam.ipynb     # Plots and comparisons of the linear GAM's results
-├── scripts/                    # Runnable, reproducible entry points
-│   ├── download_data.py        # Downloads raw GHCNh data for RDU
-│   ├── linear_gam.py           # Fits and validates the linear GAM, freezes its forecast
-│   └── linear_gam_test_evaluation.py  # Scores the frozen GAM forecast on Sep 17-30
-├── src/weather_modeling/       # Reusable code imported by notebooks/scripts
-├── tests/                      # Unit tests
-├── models/                     # Trained models / serialized artifacts
-├── reports/figures/            # Figures for the write-up and presentation
-├── docs/                       # Project documentation
-│   └── linear_gam.md           # The linear GAM: approach, inputs, how to run
+│   ├── raw/                    # Downloads (notebook 01): NOAA observations, ECMWF and GFS forecast runs
+│   ├── interim/                # Cleaned hourly temperature (notebook 02)
+│   ├── processed/              # Model-ready sample tables (notebooks 03, 04)
+│   └── external/               # Sep 17-30 observations (notebook 05); ERA5 for one diagnostic
+├── notebooks/                  # Numbered in run order
+│   ├── 01_data_sourcing_new.ipynb                    # Downloads the observations and forecast runs
+│   ├── 02_cleaning_eda_new.ipynb                     # Cleaning, quality checks, exploration
+│   ├── 03_feature_engineering_new.ipynb              # Builds the sample table
+│   ├── 04_linear_regression_modeling_new_new.ipynb   # Linear regressions, validation, final forecast
+│   ├── 05_linear_regression_test_evaluation.ipynb    # Downloads Sep 17-30 and scores the forecasts
+│   ├── 06_linear_gam.ipynb                           # Figures for the linear GAM
+│   └── deprecated/             # Earlier versions, kept for reference
+├── scripts/
+│   ├── linear_gam.py                   # Fits and validates the linear GAM, freezes its forecast
+│   ├── linear_gam_test_evaluation.py   # Scores the frozen GAM forecast on Sep 17-30
+│   ├── check_run_availability.py       # When each forecast run was actually published
+│   ├── check_station_break.py          # The July 2025 break in the station's readings
+│   ├── results/                # Outputs of the scripts, and the frozen forecasts' hashes
+│   └── deprecated/             # Earlier versions, kept for reference; they do not run from there
+├── reports/                    # Forecasts, validation summary, figures/
+├── docs/
+│   ├── linear_gam.md           # The linear GAM: approach, inputs, how to run
+│   └── data_checks.md          # Publication times, the station break, cross-check of the baselines
+├── models/                     # Fitted models (not tracked)
 ├── requirements.txt
 └── README.md
 ```
@@ -35,26 +46,62 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate.ps1
 pip install -r requirements.txt
 ```
 
-## Data
+## Running it
 
-Source: NOAA NCEI Global Historical Climatology Network hourly (GHCNh),
-station `USW00013722` (Raleigh-Durham International Airport).
-
-Regenerate the raw data (standard library only, no install needed):
+The data and results these steps produce are already in the repository, so any
+step can be run on its own. The one exception is notebook 06, which needs the
+model file that `linear_gam.py` writes to `models/`.
 
 ```bash
-python scripts/download_data.py
+# Notebooks, in order (01 and 05 download from NOAA and Open-Meteo)
+jupyter nbconvert --to notebook --execute --inplace notebooks/01_data_sourcing_new.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/02_cleaning_eda_new.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/03_feature_engineering_new.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/04_linear_regression_modeling_new_new.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/05_linear_regression_test_evaluation.ipynb
+
+# Linear GAM (a few minutes), its test scores, then its figures
+python scripts/linear_gam.py
+python scripts/linear_gam_test_evaluation.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/06_linear_gam.ipynb
+
+# Optional checks on the inputs (docs/data_checks.md)
+python scripts/check_run_availability.py
+python scripts/check_station_break.py
 ```
 
-The script keeps routine hourly reports (FM15, minute 51), converts timestamps to
-US Eastern, drops columns that are empty for the whole period, and writes one CSV
-per local year into `data/raw/ghcnh_rdu/`.
+## Data
 
-`data/processed/rdu_ghcnh_2015-01-01_to_2026-09-15.csv` is a single combined file
-of the raw data (through 2026-09-15).
+- **Observations**: NOAA NCEI Global Historical Climatology Network hourly
+  (GHCNh), station `USW00013722`, routine reports at minute 51. A report at
+  hh:51 is labelled hour hh.
+- **Forecasts**: ECMWF IFS runs from the Open-Meteo Single Runs API, which
+  returns each run as it was issued (weather data by Open-Meteo.com, CC BY 4.0).
+  GFS runs are downloaded for comparison only.
+- **Cutoff**: nothing observed or published at or after September 17, 12am
+  Eastern enters a forecast. `docs/data_checks.md` records when each run was
+  published.
+
+## Frozen forecasts and the test window
+
+| Forecast | File | Recorded hash |
+|---|---|---|
+| Linear regression | `scripts/results/final_forecast_M14.csv` | `scripts/results/final_forecast_M14.sha256` |
+| Linear GAM | `reports/forecast_2026-09-17_to_2026-09-30_linear_gam.csv` | `scripts/results/final_forecast_linear_gam.sha256` |
+
+Notebooks 04-06 and `linear_gam_test_evaluation.py` verify each forecast against
+its recorded SHA-256 before using it. `.gitattributes` keeps CSV files
+byte-identical across operating systems so that these checks also pass on
+Windows.
+
+The observations of September 17-30 are downloaded by notebook 05 into
+`data/external/rdu_obs_2026-09-17_to_2026-09-30.csv`. That notebook is the only
+code that writes the file. On October 5 NOAA had published 322 of the 336 hours;
+re-run notebook 05 to pick up the rest.
 
 ## Conventions
 
-- Never edit files in `data/raw/`; write cleaned outputs to `data/processed/`.
+- Never edit files in `data/raw/`; write derived data to `data/interim/` or
+  `data/processed/`.
 - Name notebooks `NN_short_description.ipynb` and keep them in run order.
-- Move logic reused across notebooks into `src/weather_modeling/`.
+- Split by forecast run and by time, never by row at random.
