@@ -1,8 +1,5 @@
 """Linear GAM (MOS) for the RDU forecast, on the same inputs as the LR baseline.
 
-The approach is the one of the linear-regression baseline (PR #3, notebooks
-03/04 on the ``shenwei`` branch), rebuilt on this repo's data pipeline:
-
 - The target is the **anomaly**: observed temperature minus climatology
   (``clim_temp_c``). The forecast is climatology + predicted anomaly.
 - **One model per lead day** (1-14), so each day learns how far to trust ECMWF.

@@ -1,13 +1,12 @@
 # Linear GAM
 
 A generalised additive model with an identity link (`pygam.LinearGAM`), built
-the same way as the linear-regression baseline (PR #3) but on this repo's data
-pipeline. Code: `src/weather_modeling/gam.py`. Runner:
+the same way as the linear-regression baseline. Code: `src/weather_modeling/gam.py`. Runner:
 `scripts/evaluate_linear_gam.py`. Notebook: `notebooks/06_linear_gam.ipynb`.
 
 ## Same approach as the LR
 
-| | LR baseline (PR #3) | Linear GAM (this branch) |
+| | LR baseline | Linear GAM |
 |---|---|---|
 | Target | observed − historical average | observed − `clim_temp_c` |
 | Forecast | historical average + predicted anomaly | `clim_temp_c` + predicted anomaly |
