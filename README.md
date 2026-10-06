@@ -13,7 +13,7 @@ runs. The final model is a linear regression; a linear GAM is the second model.
 │   ├── raw/                    # Downloads (notebook 01): NOAA observations, ECMWF and GFS forecast runs
 │   ├── interim/                # Cleaned hourly temperature (notebook 02)
 │   ├── processed/              # Model-ready sample tables (notebooks 03, 04)
-│   └── external/               # Sep 17-30 observations (notebook 05); ERA5, used by an earlier diagnostic
+│   └── external/               # Sep 17-30 observations (notebook 05)
 ├── notebooks/                  # Numbered in run order
 │   ├── 01_data_sourcing_new.ipynb                    # Downloads the observations and forecast runs
 │   ├── 02_cleaning_eda_new.ipynb                     # Cleaning, quality checks, exploration
@@ -30,7 +30,7 @@ runs. The final model is a linear regression; a linear GAM is the second model.
 ├── reports/                    # Forecasts, validation summary, figures/
 ├── docs/
 │   ├── linear_gam.md           # The linear GAM: approach, inputs, how to run
-│   └── data_checks.md          # Earlier checks on the inputs: publication times, the station break
+│   └── data_checks.md          # Earlier checks on the inputs: publication times, the station break (cited in notebook 02)
 ├── models/                     # Fitted models (not tracked)
 ├── requirements.txt
 └── README.md
