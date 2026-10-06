@@ -8,30 +8,27 @@ recency weighting helps.
 
 ERA5 is a diagnostic here and nothing else: it is never a feature or a target.
 
-Run:  python scripts/check_station_break.py   (after notebook 02)
+Run:  python scripts/check_station_break.py
 Output: data/external/era5_rdu_hourly.csv (downloaded once), scripts/results/station_break_monthly.csv,
         scripts/results/station_break.png
 """
 
 import json
 import urllib.request
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OBS_FILE = PROJECT_ROOT / "data" / "interim" / "rdu_temperature_clean_2015-01-01_to_2026-09-16.csv"  # from 02
-ECMWF_FILE = PROJECT_ROOT / "data" / "raw" / "ecmwf_ifs_runs_2024-03-14_to_2026-09-16.csv"  # from 01
-ERA5_FILE = PROJECT_ROOT / "data" / "external" / "era5_rdu_hourly.csv"
-RESULTS_DIR = PROJECT_ROOT / "scripts" / "results"
+import mos_lib as lib
+
+OBS_FILE = lib.PROJECT_ROOT / "data" / "interim" / "rdu_temperature_clean_2015-01-01_to_2026-09-16.csv"
+ERA5_FILE = lib.PROJECT_ROOT / "data" / "external" / "era5_rdu_hourly.csv"
 ERA5_URL = ("https://archive-api.open-meteo.com/v1/archive?latitude=35.8922&longitude=-78.7819"
             "&start_date={start}&end_date={end}&hourly=temperature_2m&models=era5")
 # ERA5 is published about five days behind real time, so stop well before the Sep 17 cutoff.
 ERA5_PERIODS = [("2015-01-01", "2018-12-31"), ("2019-01-01", "2022-12-31"), ("2023-01-01", "2026-08-31")]
 BREAK = pd.Timestamp("2025-07-22")
-AS_OF = {"fold 1 (2025)": "2025-08-16 04:00", "fold 2 (2026)": "2026-08-02 04:00", "final forecast": "2026-09-17 04:00"}
-VALID_OFFSET_H = 1  # the report labelled hh is taken at hh:51, so it is compared with values valid at hh+1:00
+AS_OF = {"fold1_2025": "2025-08-16 04:00", "fold2_2026": "2026-08-02 04:00", "final forecast": "2026-09-17 04:00"}
 
 
 def load_era5():
@@ -45,15 +42,6 @@ def load_era5():
     return pd.read_csv(ERA5_FILE, parse_dates=["valid_time_utc"]).set_index("valid_time_utc")["era5_t2m"]
 
 
-def load_ecmwf_day_ahead():
-    """Temperature of the 12z ECMWF runs at leads 12-35 h, indexed by valid time (each hour appears once)."""
-    nwp = pd.read_csv(ECMWF_FILE, usecols=["run_utc", "valid_utc", "lead_hours", "temperature_2m"])
-    run = pd.to_datetime(nwp["run_utc"], utc=True)
-    nwp = nwp[run.dt.hour.eq(12) & nwp["lead_hours"].between(12, 35)].dropna(subset=["temperature_2m"])
-    valid = pd.to_datetime(nwp["valid_utc"], utc=True).dt.tz_localize(None)
-    return pd.Series(nwp["temperature_2m"].to_numpy(), index=valid).groupby(level=0).first()
-
-
 def step_between(gap, days):
     """Mean of (station - reference) over `days` after the break minus the same number of days before it."""
     window = pd.Timedelta(days=days)
@@ -64,14 +52,17 @@ def step_between(gap, days):
 
 def main():
     obs = pd.read_csv(OBS_FILE, parse_dates=["hour_utc"])
+    # the report labelled hh (floor convention) is taken at hh:51, so it is compared with values valid at hh+1:00
     station = pd.Series(obs["temperature"].to_numpy(),
-                        index=obs["hour_utc"].dt.tz_localize(None) + pd.Timedelta(hours=VALID_OFFSET_H))
-    ecmwf = load_ecmwf_day_ahead()
+                        index=obs["hour_utc"].dt.tz_localize(None) + pd.Timedelta(hours=lib.NWP_VALID_OFFSET_H))
+    nwp = lib.load_nwp()
+    nwp = nwp[nwp["lead_hours"].between(12, 35)]
+    ecmwf = pd.Series(nwp["temperature_2m"].to_numpy(), index=nwp["valid_utc"].dt.tz_localize(None))
     gaps = {"station - ERA5": (station - load_era5()).dropna(),
             "station - ECMWF forecast": (station.reindex(ecmwf.index) - ecmwf).dropna()}
 
     monthly = pd.DataFrame({name: gap.resample("MS").mean() for name, gap in gaps.items()})
-    monthly.round(3).to_csv(RESULTS_DIR / "station_break_monthly.csv", index_label="month")
+    monthly.round(3).to_csv(lib.RESULTS_DIR / "station_break_monthly.csv", index_label="month")
     pd.set_option("display.width", 200)
     print("Monthly mean difference (degC), from 2024:\n")
     print(monthly.loc["2024":].round(2))
@@ -104,8 +95,8 @@ def main():
     ax.spines["bottom"].set_color("#c3c2b7")
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, frameon=False, labelcolor=ink, borderaxespad=0.2)
     fig.tight_layout()
-    fig.savefig(RESULTS_DIR / "station_break.png", dpi=200, facecolor=surface)
-    print("\nSaved scripts/results/station_break_monthly.csv and scripts/results/station_break.png")
+    fig.savefig(lib.RESULTS_DIR / "station_break.png", dpi=200, facecolor=surface)
+    print(f"\nSaved scripts/results/station_break_monthly.csv and scripts/results/station_break.png")
 
 
 if __name__ == "__main__":

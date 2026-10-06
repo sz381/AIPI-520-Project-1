@@ -12,36 +12,26 @@ Run:  python scripts/check_run_availability.py   ->  scripts/results/run_availab
 """
 
 import re
-import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-ECMWF_FILE = PROJECT_ROOT / "data" / "raw" / "ecmwf_ifs_runs_2024-03-14_to_2026-09-16.csv"  # from 01
-GFS_FILE = PROJECT_ROOT / "data" / "raw" / "gfs_seamless_runs_2026-04-02_to_2026-09-16.csv"  # from 01
-RESULTS_DIR = PROJECT_ROOT / "scripts" / "results"
+import mos_lib as lib
+
+GFS_FILE = lib.PROJECT_ROOT / "data" / "raw" / "gfs_seamless_runs_2026-04-02_to_2026-09-16.csv"
 DEADLINE_HOURS = {12: 16, 0: 28}   # hours after initialisation by which the run must be out (midnight local)
 CUTOFF_UTC = pd.Timestamp("2026-09-17 04:00")
 FINAL_RUN = pd.Timestamp("2026-09-16 12:00")
 
 
-def upload_time(bucket, key, retries=5):
-    """Last-modified time (UTC) of one public file, or NaT if the storage does not list it.
-
-    A failed request is retried and finally raised: treating it as "file not there" would silently change the table.
-    """
-    for attempt in range(retries):
-        try:
-            with urllib.request.urlopen(f"{bucket}/?list-type=2&prefix={key}", timeout=60) as response:
-                listing = response.read().decode("utf-8", "replace")
-            break
-        except OSError:
-            if attempt == retries - 1:
-                raise
-            time.sleep(3 * (attempt + 1))
+def upload_time(bucket, key):
+    """Last-modified time (UTC) of one public file, or NaT if it is not there."""
+    try:
+        with urllib.request.urlopen(f"{bucket}/?list-type=2&prefix={key}", timeout=60) as response:
+            listing = response.read().decode("utf-8", "replace")
+    except OSError:
+        return pd.NaT
     match = re.search(rf"<Key>{re.escape(key)}</Key><LastModified>(.*?)</LastModified>", listing)
     return pd.Timestamp(match.group(1)).tz_localize(None) if match else pd.NaT
 
@@ -55,10 +45,10 @@ def gfs_published(run):
 def ecmwf_published(run):
     for step in (360, 240):
         key = f"{run:%Y%m%d}/{run:%H}z/ifs/0p25/oper/{run:%Y%m%d%H}0000-{step}h-oper-fc.grib2"
-        published = upload_time("https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com", key)
-        if pd.notna(published):
+        time = upload_time("https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com", key)
+        if pd.notna(time):
             break
-    return key, published
+    return key, time
 
 
 def run_times(path):
@@ -68,16 +58,16 @@ def run_times(path):
 
 def main():
     rows = []
-    for model, path, published in [("ecmwf_ifs", ECMWF_FILE, ecmwf_published), ("gfs_seamless", GFS_FILE, gfs_published)]:
+    for model, path, published in [("ecmwf_ifs", lib.ECMWF_FILE, ecmwf_published), ("gfs_seamless", GFS_FILE, gfs_published)]:
         runs = run_times(path)
         with ThreadPoolExecutor(8) as executor:
             found = list(executor.map(published, runs))
-        rows += [{"model": model, "run_utc": run, "file": key, "published_utc": when} for run, (key, when) in zip(runs, found)]
+        rows += [{"model": model, "run_utc": run, "file": key, "published_utc": time} for run, (key, time) in zip(runs, found)]
     table = pd.DataFrame(rows)
     table["hours_after_init"] = (table["published_utc"] - table["run_utc"]) / pd.Timedelta(hours=1)
     table["deadline_hours"] = table["run_utc"].dt.hour.map(DEADLINE_HOURS)
     table["in_time"] = table["hours_after_init"] <= table["deadline_hours"]
-    table.round(2).to_csv(RESULTS_DIR / "run_availability.csv", index=False, date_format="%Y-%m-%d %H:%M:%S")
+    table.round(2).to_csv(lib.RESULTS_DIR / "run_availability.csv", index=False, date_format="%Y-%m-%d %H:%M:%S")
 
     for (model, hour), part in table.groupby(["model", table["run_utc"].dt.hour]):
         lag = part.loc[part["in_time"], "hours_after_init"]

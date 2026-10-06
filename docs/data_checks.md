@@ -1,16 +1,14 @@
 # Data checks
 
-Two checks on the inputs that the notebooks do not make themselves, and a
-cross-check of the baselines against a second implementation.
+Two earlier checks on the inputs, and a cross-check of the baselines against a
+second implementation. The checks are not part of the pipeline: their scripts
+are kept in `scripts/deprecated/` and, like the others there, do not run from
+that folder. The results below are the ones they produced.
 
-| Script | Answers | Output in `scripts/results/` |
+| Script | Answers | Output in `scripts/deprecated/results/` |
 |---|---|---|
-| `scripts/check_run_availability.py` | Was every forecast run published before it was used? | `run_availability.csv` |
-| `scripts/check_station_break.py` | Why does the ECMWF bias change in mid-2025? | `station_break_monthly.csv`, `station_break.png` |
-
-Both read the files written by notebooks 01 and 02 and can be run on their own.
-The availability check makes about 2,000 small requests and takes a few
-minutes.
+| `scripts/deprecated/check_run_availability.py` | Was every forecast run published before it was used? | `run_availability.csv` |
+| `scripts/deprecated/check_station_break.py` | Why does the ECMWF bias change in mid-2025? | `station_break_monthly.csv`, `station_break.png` |
 
 The comparison of raw GFS with raw ECMWF, which used to be a third script here,
 is now part of the notebooks: 03 adds the GFS forecast to the sample table, 04
@@ -60,7 +58,7 @@ and ECMWF (open data).
 Against both ECMWF forecasts and the ERA5 reanalysis, the station's reported
 temperature drops around 2025-07-22, after sitting higher since early 2024.
 
-![Station temperature against two references](../scripts/results/station_break.png)
+![Station temperature against two references](../scripts/deprecated/results/station_break.png)
 
 | Reference | Drop, 12 months after against 12 months before |
 |---|---|

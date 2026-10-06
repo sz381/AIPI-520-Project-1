@@ -13,7 +13,7 @@ runs. The final model is a linear regression; a linear GAM is the second model.
 │   ├── raw/                    # Downloads (notebook 01): NOAA observations, ECMWF and GFS forecast runs
 │   ├── interim/                # Cleaned hourly temperature (notebook 02)
 │   ├── processed/              # Model-ready sample tables (notebooks 03, 04)
-│   └── external/               # Sep 17-30 observations (notebook 05); ERA5 for one diagnostic
+│   └── external/               # Sep 17-30 observations (notebook 05); ERA5, used by an earlier diagnostic
 ├── notebooks/                  # Numbered in run order
 │   ├── 01_data_sourcing_new.ipynb                    # Downloads the observations and forecast runs
 │   ├── 02_cleaning_eda_new.ipynb                     # Cleaning, quality checks, exploration
@@ -25,14 +25,12 @@ runs. The final model is a linear regression; a linear GAM is the second model.
 ├── scripts/
 │   ├── linear_gam.py                   # Fits and validates the linear GAM, freezes its forecast
 │   ├── linear_gam_test_evaluation.py   # Scores the frozen GAM forecast on Sep 17-30
-│   ├── check_run_availability.py       # When each forecast run was actually published
-│   ├── check_station_break.py          # The July 2025 break in the station's readings
 │   ├── results/                # Outputs of the scripts, and the frozen forecasts' hashes
 │   └── deprecated/             # Earlier versions, kept for reference; they do not run from there
 ├── reports/                    # Forecasts, validation summary, figures/
 ├── docs/
 │   ├── linear_gam.md           # The linear GAM: approach, inputs, how to run
-│   └── data_checks.md          # Publication times, the station break, cross-check of the baselines
+│   └── data_checks.md          # Earlier checks on the inputs: publication times, the station break
 ├── models/                     # Fitted models (not tracked)
 ├── requirements.txt
 └── README.md
@@ -64,10 +62,6 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/05_linear_regressi
 python scripts/linear_gam.py
 python scripts/linear_gam_test_evaluation.py
 jupyter nbconvert --to notebook --execute --inplace notebooks/06_linear_gam.ipynb
-
-# Optional checks on the inputs (docs/data_checks.md)
-python scripts/check_run_availability.py
-python scripts/check_station_break.py
 ```
 
 ## Data
