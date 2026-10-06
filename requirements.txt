@@ -9,3 +9,7 @@ pygam>=0.10.1      # linear GAM (src/weather_modeling/gam.py)
 jupyter
 ipykernel
 pytest
+
+# This repo's own package (src/weather_modeling), installed in editable mode so
+# scripts, tests and notebooks can `import weather_modeling` and see code changes.
+-e .

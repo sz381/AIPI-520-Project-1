@@ -47,8 +47,7 @@ forecast runs.
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate.ps1
 python -m pip install --upgrade pip   # older pip cannot do the editable install below
-pip install -r requirements.txt
-pip install -e .                 # makes `weather_modeling` importable in notebooks
+pip install -r requirements.txt  # also installs this repo (-e .) so `weather_modeling` imports anywhere
 ```
 
 ## Data
