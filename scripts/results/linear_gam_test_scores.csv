@@ -1,0 +1,7 @@
+,MAE,RMSE,bias (obs - forecast),GAM improvement (% lower MAE)
+Persistence,4.061,4.961,-1.356,35.744
+Historical average,3.64,4.419,-0.217,28.323
+ECMWF raw,3.27,4.069,-0.03,20.221
+ECMWF lagged mean,2.832,3.679,-1.0,7.863
+Linear regression,2.694,3.666,-1.312,3.166
+Linear GAM,2.609,3.582,-1.433,0.0
