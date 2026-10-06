@@ -16,12 +16,14 @@ forecast runs.
 │   ├── external/               # Reference data for diagnostics (ERA5), never a model input
 │   ├── processed/              # Final, model-ready datasets
 ├── notebooks/                  # Exploratory work, numbered in run order
-│   └── 01_data_sourcing.ipynb
+│   ├── 01_data_sourcing.ipynb
+│   └── 06_linear_gam.ipynb     # Linear GAM: validation, final forecast, test scoring
 ├── scripts/                    # Runnable, reproducible entry points
 │   ├── download_data.py        # Downloads raw GHCNh data for RDU
 │   ├── download_nwp.py         # Downloads the forecast runs from Open-Meteo
 │   ├── build_dataset.py        # Builds data/processed/ from the raw downloads
 │   ├── evaluate_baselines.py   # Scores the baselines on the validation folds
+│   ├── evaluate_linear_gam.py  # Validates the linear GAM and writes its forecast
 │   ├── check_run_availability.py  # Publication time of every forecast run used
 │   ├── check_station_break.py  # Evidence for the July 2025 break in RDU's readings
 │   ├── break_sensitivity.py    # Scores under each treatment of that break
@@ -33,7 +35,8 @@ forecast runs.
 ├── reports/predictions/        # Final forecasts, one CSV per model
 ├── docs/                       # Project documentation
 │   ├── README_part1.md         # What was built for the data and evaluation part
-│   └── data_and_evaluation.md  # Data dictionary and how to evaluate a model
+│   ├── data_and_evaluation.md  # Data dictionary and how to evaluate a model
+│   └── linear_gam.md           # The linear GAM: approach, inputs, how to run
 ├── requirements.txt
 └── README.md
 ```
