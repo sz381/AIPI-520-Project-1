@@ -1,0 +1,5 @@
+period,model,MAE,RMSE,bias,hours
+fold2_2026,N0 raw ECMWF,2.023,2.803,0.013,12932.0
+fold2_2026,G0 raw GFS,2.606,3.508,0.291,12932.0
+test Sep 17-30,N0 raw ECMWF,3.27,4.069,-0.03,322.0
+test Sep 17-30,G0 raw GFS,4.031,5.194,0.897,322.0
