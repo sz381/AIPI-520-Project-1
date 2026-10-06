@@ -30,7 +30,7 @@ def main():
     assert len(test) == lib.HORIZON and train["target_utc"].max() < CUTOFF_UTC
 
     obs = pd.read_csv(OBS_FILE, index_col="hour_utc", parse_dates=["hour_utc"])
-    actual = obs["temperature"].reindex(test["target_utc"]).to_numpy()
+    actual = obs["observed_deg_c"].reindex(test["target_utc"]).to_numpy()  # column written by notebook 05
     print(f"Test hours with an observation: {np.isfinite(actual).sum()} of {len(actual)}")
 
     fallback = exp.station_lr(train, test)

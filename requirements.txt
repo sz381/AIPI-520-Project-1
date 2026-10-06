@@ -1,4 +1,4 @@
-# Starter dependencies for modeling/analysis (scripts/download_data.py is stdlib-only).
+# Dependencies for the notebooks and scripts.
 # Pin versions once the modeling approach is settled.
 numpy
 pandas

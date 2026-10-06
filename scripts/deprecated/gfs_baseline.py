@@ -51,7 +51,7 @@ def main():
     test = samples[samples["run_day"].eq(FINAL_RUN_DAY)].reset_index(drop=True)
     assert len(test) == lib.HORIZON and test["gfs_12z"].notna().all(), "the Sep 16 12z GFS run must cover all 336 hours"
     obs = pd.read_csv(OBS_FILE, index_col="hour_utc", parse_dates=["hour_utc"])
-    observed = obs["temperature"] if "temperature" in obs else obs["observed_deg_c"]
+    observed = obs["observed_deg_c"]  # column written by notebook 05
     test_scores, test_by_day = score(test, pd.Series(observed.reindex(test["target_utc"]).to_numpy()))
 
     scores = pd.concat({FOLD: val_scores, "test Sep 17-30": test_scores}, names=["period", "model"]).round(3)
