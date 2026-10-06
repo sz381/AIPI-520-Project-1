@@ -4,6 +4,7 @@ numpy
 pandas
 matplotlib
 scikit-learn
+pygam>=0.10.1      # linear GAM (scripts/linear_gam.py)
 jupyter
 ipykernel
 tqdm

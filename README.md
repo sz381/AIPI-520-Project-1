@@ -11,14 +11,18 @@ hourly observations, 2015-01-01 through 2026-09-16.
 │   ├── raw/ghcnh_rdu/<year>/   # Immutable downloads, one CSV per (Eastern) year
 │   ├── processed/              # Final, model-ready datasets
 ├── notebooks/                  # Exploratory work, numbered in run order
-│   └── 01_data_sourcing.ipynb
+│   ├── 01_data_sourcing.ipynb
+│   └── 06_linear_gam.ipynb     # Plots and comparisons of the linear GAM's results
 ├── scripts/                    # Runnable, reproducible entry points
-│   └── download_data.py        # Downloads raw GHCNh data for RDU
+│   ├── download_data.py        # Downloads raw GHCNh data for RDU
+│   ├── linear_gam.py           # Fits and validates the linear GAM, freezes its forecast
+│   └── linear_gam_test_evaluation.py  # Scores the frozen GAM forecast on Sep 17-30
 ├── src/weather_modeling/       # Reusable code imported by notebooks/scripts
 ├── tests/                      # Unit tests
 ├── models/                     # Trained models / serialized artifacts
 ├── reports/figures/            # Figures for the write-up and presentation
 ├── docs/                       # Project documentation
+│   └── linear_gam.md           # The linear GAM: approach, inputs, how to run
 ├── requirements.txt
 └── README.md
 ```

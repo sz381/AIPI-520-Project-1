@@ -1,0 +1,8 @@
+,Fold 1 (2025),Fold 1 (2025),Fold 2 (2026),Fold 2 (2026)
+,MAE,RMSE,MAE,RMSE
+Persistence,3.871,4.796,2.869,3.666
+Historical average,2.898,3.506,2.491,3.062
+ECMWF raw,2.437,3.302,2.017,2.796
+ECMWF lagged mean,2.288,3.053,1.881,2.57
+Linear regression,2.204,2.875,1.777,2.371
+Linear GAM,2.225,2.904,1.808,2.412
