@@ -1,80 +1,61 @@
 # Linear GAM
 
 A generalised additive model with an identity link (`pygam.LinearGAM`), built
-the same way as the linear-regression baseline. Code: `src/weather_modeling/gam.py`. Runner:
-`scripts/evaluate_linear_gam.py`. Notebook: `notebooks/06_linear_gam.ipynb`.
+the same way as the linear regression in `notebooks/04_linear_regression_modeling_new.ipynb`
+and trained on the same table from `03`
+(`data/processed/model_samples_2024-03-14_to_2026-09-16.csv.gz`).
 
-## Same approach as the LR
+| File | Role |
+|---|---|
+| `scripts/linear_gam.py` | Fits, validates, saves the final models, makes and freezes the forecast |
+| `scripts/linear_gam_test_evaluation.py` | Scores the frozen forecast on Sep 17-30, once |
+| `notebooks/06_linear_gam.ipynb` | Reads those outputs; plots and comparisons only |
 
-| | LR baseline | Linear GAM |
+## Same approach as the linear regression
+
+| | Linear regression (04) | Linear GAM |
 |---|---|---|
-| Target | observed − historical average | observed − `clim_temp_c` |
-| Forecast | historical average + predicted anomaly | `clim_temp_c` + predicted anomaly |
-| Models | one per lead day (1-14) | one per lead day (1-14) |
+| Target | temperature − `hist_avg` | temperature − `hist_avg` |
+| Forecast | `hist_avg` + predicted difference | `hist_avg` + predicted difference |
+| Models | one per forecast day (1-14) | one per forecast day (1-14) |
 | Training weights | half-life 180 days | half-life 180 days |
-| Inputs | 12 (below) | the same 12, hour as one cyclic term |
+| Inputs | the 12 `FEATURES` of 03 | the same information (below) |
 | Form | straight line per input | smooth curve per input |
 
-Inputs (`gam.LR_FEATURES`), each known at the run's cutoff:
+| Input | GAM term |
+|---|---|
+| `nwp_lagged_anomaly`, `nwp_anomaly` (ECMWF minus `hist_avg`) | spline |
+| `nwp_recent_error` (ECMWF error over the last 6 observed hours) | spline |
+| `anom_now`, `anom_24h` (station anomaly at the forecast start) | spline |
+| `nwp_bias_14d`, `_30d`, `_60d` (recent ECMWF bias) | linear |
+| hour of the target (`hour_sin1`..`hour_cos2` in the LR) | one cyclic spline on the local hour, 0-24 |
 
-| Input | Meaning | GAM term |
-|---|---|---|
-| `nwp_anomaly` | ECMWF 12z forecast − climatology | spline |
-| `nwp_lagged_anomaly` | mean of the 12z runs of days d, d−1, d−2 − climatology | spline |
-| `nwp_recent_error` | observed − forecast over the run's last 6 observed hours | spline |
-| `nwp_bias_14d`, `_30d`, `_60d` | mean observed − forecast at lead day 1 over the previous 14/30/60 days | linear |
-| `anom_now` | observed − climatology at the cutoff | spline |
-| `anom_24h` | mean observed − climatology over the last 24 h | spline |
-| `hour_sin1..cos2` (LR) / `hour_local` (GAM) | target hour | cyclic spline (0-24) |
+Splines have 10 basis functions (12 for the hour) and a second-difference
+penalty. One smoothing value per forecast day, applied to all terms, is chosen
+by GCV from `LAM_GRID`.
 
-Splines: 10 basis functions (12 for the hour), second-difference penalty. The
-smoothing parameter is one value per lead day, applied to all terms, chosen by
-GCV from `gam.LAM_GRID`.
-
-`lr_mos` is the LR rebuilt on the same rows and inputs (sklearn
-`LinearRegression`), so GAM vs `lr_mos` isolates the effect of smooth terms.
-
-## Differences from the LR's own pipeline
-
-- **Climatology.** The anomaly is taken against `clim_temp_c` (2015-2023,
-  ±10 days, by UTC hour), not the LR notebook's expanding "earlier years"
-  average. This is what the shared harness and baselines use.
-- **Lagged ensemble.** This repo archives 12z runs only, so the lagged mean
-  uses the 12z runs of days d, d−1 and d−2 instead of 12z d, 00z d and 12z d−1.
-- **Timing conventions** are the repo's (`config.py`): run + 16 h cutoff, the
-  xx:51 report paired with the next full hour.
-
-With these changes `lr_mos` reproduces the LR baseline closely: 14-day MAE
-(hours pooled) 2.24 / 1.77 °C on the 2025 / 2026 folds against the PR's
-2.20 / 1.78.
-
-## Checks
-
-`tests/test_gam.py`: features are unchanged when a run is rebuilt from
-observations truncated at its cutoff and runs up to itself (four runs, including
-the issue run); the 336 final rows have every input; a smoke fit of the GAM
-(skipped if pygam is not installed).
+Validation is the same as in `04`: the two season-matched folds and the six
+2026 windows, each trained only on targets before the period it is scored on,
+with every method scored on the same hours. The script refits the `04` linear
+regression next to the GAM (it reproduces the frozen `04` forecast exactly), so
+"Linear regression" in the outputs is the `04` model.
 
 ## Running it
 
 ```bash
-pip install -r requirements.txt     # adds pygam
-python scripts/build_dataset.py     # if data/processed/ is missing
-python scripts/evaluate_linear_gam.py
-pytest tests/test_gam.py
-# once, after the forecasts are frozen:
-python scripts/score_submission.py reports/predictions/linear_gam.csv reports/predictions/lr_mos.csv
-# then, for plots and comparisons:
-jupyter notebook notebooks/06_linear_gam.ipynb
+pip install -r requirements.txt                  # includes pygam
+python scripts/linear_gam.py                     # a few minutes
+python scripts/linear_gam_test_evaluation.py     # once, after the forecast is frozen
 ```
 
-The scripts do all the work: `evaluate_linear_gam.py` fits, validates, saves
-the final models (`models/linear_gam.pkl`, not tracked) and freezes the
-forecasts; `score_submission.py` scores them and also writes
-`reports/final_hourly.csv`. The notebook fits and scores nothing. It reads
-those outputs to plot validation by lead day and by hour, the 2026 windows,
-the GAM's partial dependence and ECMWF weight against the LR's, the final
-forecast and the test results.
+Then open `notebooks/06_linear_gam.ipynb` for the figures (`reports/figures/06_*.png`).
 
-The evaluation fits 14 GAMs per fold, for 2 folds, 6 windows and the final
-model, with a 7-value lambda search each; expect a few minutes.
+`linear_gam.py` writes `scripts/results/linear_gam_*.csv`, `models/linear_gam.pkl`
+(not tracked by git), and the forecast
+`reports/forecast_2026-09-17_to_2026-09-30_linear_gam.csv` with its SHA-256 in
+`scripts/results/final_forecast_linear_gam.sha256`. If a frozen forecast with a
+different hash already exists, the script stops instead of overwriting it
+(`--refreeze` overrides, only before any test scoring).
+`linear_gam_test_evaluation.py` checks that hash, then scores every method,
+including the frozen `04` forecast, on the observed hours of
+`data/external/rdu_obs_2026-09-17_to_2026-09-30.csv` (downloaded by `05`).

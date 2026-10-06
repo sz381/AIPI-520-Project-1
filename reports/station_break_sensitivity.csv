@@ -1,7 +1,0 @@
-fold,treatment,offset_c,post_break_days,train_runs,persistence,climatology,station_lr,raw_ecmwf,raw_gfs,ecmwf_lr
-autumn_2025,as_reported,,,513,3.881,2.959,3.162,2.447,,2.693
-autumn_2025,shifted,1.492,25.0,513,3.881,2.959,2.814,2.447,,2.236
-autumn_2025,dropped,,,35,,,,,,
-late_summer_2026,as_reported,,,863,2.893,2.475,2.158,2.101,2.698,1.824
-late_summer_2026,shifted,0.961,365.0,863,2.893,2.475,2.278,2.101,2.698,1.816
-late_summer_2026,dropped,,,385,2.893,2.475,2.306,2.101,2.698,1.83

@@ -6,7 +6,7 @@ __pycache__/
 .ruff_cache/
 
 # Virtual environments
-.venv/
+.venv/*
 venv/
 env/
 
@@ -29,7 +29,5 @@ Thumbs.db
 # data/raw/*
 # data/processed/*
 # !data/**/.gitkeep
-# Per-run API responses; rebuilt by scripts/download_nwp.py
-data/interim/openmeteo_cache/
 models/*
 !models/.gitkeep

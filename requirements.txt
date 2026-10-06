@@ -2,14 +2,10 @@
 # Pin versions once the modeling approach is settled.
 numpy
 pandas
-pyarrow
 matplotlib
 scikit-learn
-pygam>=0.10.1      # linear GAM (src/weather_modeling/gam.py)
+pygam>=0.10.1      # linear GAM (scripts/linear_gam.py)
 jupyter
 ipykernel
+tqdm
 pytest
-
-# This repo's own package (src/weather_modeling), installed in editable mode so
-# scripts, tests and notebooks can `import weather_modeling` and see code changes.
--e .
