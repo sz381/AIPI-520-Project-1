@@ -1,0 +1,4 @@
+# The frozen forecasts are verified by SHA-256 (notebooks 04-06, scripts/linear_gam_test_evaluation.py).
+# Without this, Git on Windows checks CSV files out with CRLF line endings and every hash check fails.
+*.csv text eol=lf
+*.sha256 text eol=lf
